@@ -1,14 +1,21 @@
 /* =============================================================
-   Stodoła Artystów CRM — stylesheet główny
-   Nadbudowa nad Pico CSS z dodatkami:
-   - skip link (WCAG)
-   - trzy tryby motywu (jasny/ciemny/wysoki kontrast)
-   - ekran logowania
-   - loading state
-   - minimalna typografia
+   Stodoła Artystów CRM — stylesheet Etap 1A
+   Nadbudowa nad Pico CSS.
+   Sekcje:
+   - Skip link, focus, motyw wysokiego kontrastu
+   - Loading screen + spinner overlay
+   - Topbar (nawigacja)
+   - Container, page header
+   - Tabele i karty (RWD)
+   - Formularze
+   - Modal
+   - Toast
+   - Login screen
+   - Dashboard (quick actions)
+   - Karta firmy
    ============================================================= */
 
-/* --- Skip link (WCAG: Navigation Techniques) --- */
+/* --- Skip link (WCAG) --- */
 .skip-link {
   position: absolute;
   top: -40px;
@@ -16,16 +23,20 @@
   background: #000;
   color: #fff;
   padding: 0.5rem 1rem;
-  z-index: 100;
+  z-index: 1000;
   text-decoration: none;
 }
 .skip-link:focus {
   top: 0;
 }
 
-/* --- Tryb wysokiego kontrastu ---
-   Włączany przez dodanie class="high-contrast" do <html>.
-   Nie używa zmiennych Pico — nadpisuje je twardo dla pewności. */
+/* --- Focus visible (WCAG) --- */
+*:focus-visible {
+  outline: 2px solid var(--pico-primary-background);
+  outline-offset: 2px;
+}
+
+/* --- Tryb wysokiego kontrastu --- */
 html.high-contrast {
   --pico-background-color: #000;
   --pico-color: #fff;
@@ -33,12 +44,14 @@ html.high-contrast {
   --pico-h2-color: #fff;
   --pico-h3-color: #fff;
   --pico-muted-color: #ccc;
+  --pico-muted-border-color: #fff;
   --pico-primary-background: #ffd700;
   --pico-primary-color: #000;
   --pico-primary-hover-background: #ffed4e;
   --pico-primary-hover-color: #000;
   --pico-secondary-background: #fff;
   --pico-secondary-color: #000;
+  --pico-secondary-hover-background: #ddd;
   --pico-border-color: #fff;
   --pico-form-element-border-color: #fff;
   --pico-form-element-background-color: #000;
@@ -47,26 +60,19 @@ html.high-contrast {
   --pico-card-background-color: #111;
   --pico-card-border-color: #fff;
 }
-
 html.high-contrast a,
-html.high-contrast button,
+html.high-contrast button:not([disabled]),
 html.high-contrast input,
 html.high-contrast select,
 html.high-contrast textarea {
   border-width: 2px !important;
 }
-
-/* Widoczny focus ring we wszystkich motywach — WCAG wymaga */
 html.high-contrast *:focus-visible {
   outline: 3px solid #ffd700 !important;
   outline-offset: 2px !important;
 }
-*:focus-visible {
-  outline: 2px solid var(--pico-primary-background);
-  outline-offset: 2px;
-}
 
-/* --- Loading state --- */
+/* --- Loading screen --- */
 .loading-screen {
   display: flex;
   min-height: 50vh;
@@ -75,14 +81,531 @@ html.high-contrast *:focus-visible {
   color: var(--pico-muted-color);
 }
 
-/* --- Ekran logowania --- */
+/* --- Spinner overlay --- */
+#spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+#spinner-overlay.visible {
+  display: flex;
+}
+.spinner-content {
+  background: var(--pico-card-background-color, #fff);
+  padding: 2rem 3rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  min-width: 220px;
+}
+.spinner-icon {
+  width: 64px;
+  height: 64px;
+  animation: spinner-spin 1.2s linear infinite;
+  display: block;
+  margin: 0 auto 1rem;
+}
+@keyframes spinner-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spinner-message {
+  color: var(--pico-muted-color);
+  font-size: 0.9rem;
+}
+
+html.high-contrast .spinner-content {
+  border: 2px solid #fff;
+}
+
+/* --- Topbar --- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  background: var(--pico-card-background-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 1rem;
+}
+.topbar-brand a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: inherit;
+}
+.topbar-brand img {
+  height: 36px;
+  width: auto;
+}
+.topbar-brand .brand-name {
+  font-size: 1rem;
+}
+.topbar-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.25rem;
+}
+.topbar-nav a,
+.topbar-nav .nav-disabled {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.95rem;
+}
+.topbar-nav a:hover {
+  background: var(--pico-secondary-hover-background, rgba(0,0,0,0.05));
+}
+.topbar-nav a.active {
+  font-weight: 600;
+  background: var(--pico-secondary-hover-background, rgba(0,0,0,0.08));
+}
+.topbar-nav .nav-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.topbar-nav .hamburger {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--pico-muted-border-color);
+  font-size: 1.5rem;
+  padding: 0.25rem 0.6rem;
+  min-height: 40px;
+  border-radius: 0.25rem;
+}
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--pico-muted-color);
+}
+.topbar-user .user-name {
+  color: var(--pico-color);
+  font-weight: 500;
+}
+.topbar-user .user-role {
+  font-size: 0.75rem;
+}
+
+/* --- Container --- */
+.container {
+  max-width: 1200px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}
+
+/* --- Page header (nad listami) --- */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.page-header h1 {
+  margin: 0;
+}
+.page-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* --- Welcome (dashboard) --- */
+.welcome {
+  margin-bottom: 1.5rem;
+}
+.welcome h1 {
+  margin-bottom: 0.25rem;
+}
+
+/* --- Quick actions (dashboard) --- */
+.quick-actions {
+  margin-bottom: 2rem;
+}
+.quick-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: 0.5rem;
+  background: var(--pico-card-background-color);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  min-height: 80px;
+}
+.quick-action:hover {
+  border-color: var(--pico-primary-background);
+  transform: translateY(-1px);
+  transition: all 0.15s;
+}
+.qa-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+.qa-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.qa-text strong {
+  font-size: 1rem;
+}
+.qa-text span {
+  font-size: 0.85rem;
+  color: var(--pico-muted-color);
+}
+
+.settings-block {
+  margin-top: 2rem;
+}
+
+/* --- Tabela / karty (responsywne) --- */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.table-search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+  margin: 0;
+}
+.table-counter {
+  font-size: 0.85rem;
+  color: var(--pico-muted-color);
+}
+.table-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--pico-muted-color);
+  font-style: italic;
+}
+.table-wrap {
+  margin-bottom: 1rem;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.data-table th,
+.data-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  text-align: left;
+  vertical-align: middle;
+}
+.data-table th {
+  background: var(--pico-card-background-color);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+.data-table tr:hover {
+  background: var(--pico-secondary-hover-background, rgba(0,0,0,0.02));
+}
+.data-table .sort-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  min-height: auto;
+}
+.data-table .sort-btn:hover {
+  text-decoration: underline;
+}
+
+/* Karty (mobile) - ukryte na desktop, pokazują się tylko na mobile */
+.data-cards { display: none; }
+
+/* --- Paginacja --- */
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+.table-pagination .page-info {
+  font-size: 0.85rem;
+  color: var(--pico-muted-color);
+  white-space: nowrap;
+}
+
+/* --- Badge / tag --- */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--pico-secondary-hover-background, #e0e0e0);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.badge-info { background: #cfe2ff; color: #084298; }
+.badge-warn { background: #fff3cd; color: #664d03; }
+.tag {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.25rem;
+  background: rgba(0,0,0,0.06);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+html.high-contrast .badge,
+html.high-contrast .badge-info,
+html.high-contrast .badge-warn,
+html.high-contrast .tag {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+}
+
+.muted { color: var(--pico-muted-color); }
+.num { font-variant-numeric: tabular-nums; font-weight: 500; }
+.avatar-mini {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--pico-primary-background);
+  color: var(--pico-primary-color);
+  text-align: center;
+  line-height: 24px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+.avatar-name { vertical-align: middle; font-size: 0.9rem; }
+
+/* --- Komunikaty (alert) --- */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  margin: 1rem 0;
+  border: 1px solid transparent;
+}
+.alert-error { background: #fee; color: #900; border-color: #fcc; }
+.alert-info { background: #eef; color: #039; border-color: #ccf; }
+.alert-success { background: #efe; color: #060; border-color: #cfc; }
+html.high-contrast .alert-error { background: #000; color: #ff6b6b; border-color: #ff6b6b; border-width: 2px; }
+html.high-contrast .alert-info { background: #000; color: #4dabf7; border-color: #4dabf7; border-width: 2px; }
+html.high-contrast .alert-success { background: #000; color: #51cf66; border-color: #51cf66; border-width: 2px; }
+
+/* --- Toast --- */
+#toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 3000;
+  max-width: calc(100vw - 2rem);
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  background: var(--pico-card-background-color, #fff);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.25s, transform 0.25s;
+  max-width: 400px;
+}
+.toast.visible { opacity: 1; transform: translateX(0); }
+.toast-success { border-color: #6c6; background: #efe; color: #060; }
+.toast-error { border-color: #c66; background: #fee; color: #900; }
+.toast-info { border-color: #66c; background: #eef; color: #039; }
+.toast-message { flex: 1; font-size: 0.9rem; word-break: break-word; }
+.toast-close {
+  background: transparent;
+  border: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  padding: 0 0.25rem;
+  min-height: auto;
+  margin-top: -0.25rem;
+}
+html.high-contrast .toast {
+  background: #000;
+  border-width: 2px;
+}
+html.high-contrast .toast-success { color: #51cf66; border-color: #51cf66; }
+html.high-contrast .toast-error { color: #ff6b6b; border-color: #ff6b6b; }
+html.high-contrast .toast-info { color: #4dabf7; border-color: #4dabf7; }
+
+/* --- Modal --- */
+body.modal-open { overflow: hidden; }
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  z-index: 1500;
+  overflow-y: auto;
+}
+.modal-dialog {
+  background: var(--pico-card-background-color, #fff);
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 4rem);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.modal-small { max-width: 400px; }
+.modal-large { max-width: 900px; }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+}
+.modal-header h2 { margin: 0; font-size: 1.25rem; }
+.modal-close {
+  background: transparent;
+  border: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  padding: 0 0.5rem;
+}
+.modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+html.high-contrast .modal-dialog { border: 2px solid #fff; }
+
+/* --- Formularze --- */
+.form-row {
+  margin-bottom: 1rem;
+}
+.form-row label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+.form-row .required { color: #c00; }
+.form-row input[type="text"],
+.form-row input[type="email"],
+.form-row input[type="url"],
+.form-row input[type="search"],
+.form-row select,
+.form-row textarea {
+  width: 100%;
+  margin: 0;
+}
+.form-row textarea {
+  font-family: inherit;
+  resize: vertical;
+}
+.form-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--pico-muted-color);
+}
+.field-error {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #c00;
+  min-height: 1em;
+}
+html.high-contrast .field-error { color: #ff6b6b; }
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.form-actions button { min-width: 120px; }
+fieldset {
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  margin: 0;
+}
+fieldset legend {
+  padding: 0 0.5rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.tag-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+.tag-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 400;
+  margin: 0;
+  cursor: pointer;
+}
+.tag-checkbox input { margin: 0; }
+button.danger {
+  background: #c00;
+  color: #fff;
+  border-color: #c00;
+}
+button.danger:hover { background: #a00; }
+html.high-contrast button.danger { background: #ff6b6b; color: #000; border-color: #ff6b6b; }
+
+/* --- Login screen --- */
 .login-screen {
   max-width: 420px;
   margin: 2rem auto;
   padding: 1.5rem;
   text-align: center;
 }
-
 .login-screen .logo {
   max-width: 280px;
   width: 100%;
@@ -90,18 +613,15 @@ html.high-contrast *:focus-visible {
   margin: 1rem auto;
   display: block;
 }
-
 .login-screen h1 {
   font-size: 1.5rem;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
-
 .login-screen .tagline {
   color: var(--pico-muted-color);
   margin-bottom: 2rem;
 }
-
 .login-screen .btn-google {
   display: inline-flex;
   align-items: center;
@@ -112,139 +632,150 @@ html.high-contrast *:focus-visible {
   font-size: 1rem;
   font-weight: 500;
 }
-
 .login-screen .help-text {
   margin-top: 1.5rem;
   font-size: 0.875rem;
   color: var(--pico-muted-color);
   line-height: 1.5;
 }
-
 .login-screen .theme-switcher {
   margin-top: 2.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--pico-muted-border-color);
   font-size: 0.875rem;
 }
-
 .login-screen .theme-switcher label {
   display: inline-block;
   margin-right: 0.5rem;
   color: var(--pico-muted-color);
 }
-
 .login-screen .theme-switcher select {
   display: inline-block;
   width: auto;
   min-height: 40px;
 }
-
 .login-screen .footer {
   margin-top: 2rem;
   font-size: 0.75rem;
   color: var(--pico-muted-color);
 }
 
-/* --- Błędy i komunikaty --- */
-.alert {
-  padding: 0.75rem 1rem;
-  border-radius: 0.25rem;
-  margin: 1rem 0;
-  border: 1px solid transparent;
-}
-.alert-error {
-  background: #fee;
-  color: #900;
-  border-color: #fcc;
-}
-.alert-info {
-  background: #eef;
-  color: #039;
-  border-color: #ccf;
-}
-.alert-success {
-  background: #efe;
-  color: #060;
-  border-color: #cfc;
-}
-
-html.high-contrast .alert-error {
-  background: #000;
-  color: #ff6b6b;
-  border-color: #ff6b6b;
-  border-width: 2px;
-}
-html.high-contrast .alert-info {
-  background: #000;
-  color: #4dabf7;
-  border-color: #4dabf7;
-  border-width: 2px;
-}
-html.high-contrast .alert-success {
-  background: #000;
-  color: #51cf66;
-  border-color: #51cf66;
-  border-width: 2px;
-}
-
-/* --- Dashboard (Etap 0 — minimalna wersja) --- */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--pico-muted-border-color);
-  background: var(--pico-card-background-color);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-.topbar .brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-}
-.topbar .brand img {
-  height: 32px;
-  width: auto;
-}
-.topbar .user-info {
-  font-size: 0.875rem;
+/* Theme switcher used in dashboard też */
+.settings-block .theme-switcher label {
+  display: inline-block;
+  margin-right: 0.5rem;
   color: var(--pico-muted-color);
 }
-.topbar .user-info strong {
-  color: var(--pico-color);
+.settings-block .theme-switcher select {
+  display: inline-block;
+  width: auto;
+  min-height: 40px;
 }
 
-.dashboard-container {
-  max-width: 1200px;
-  margin: 1.5rem auto;
-  padding: 0 1rem;
+/* --- Karta firmy --- */
+.breadcrumbs {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--pico-muted-color);
 }
-
-.welcome {
+.breadcrumbs a { color: inherit; }
+.company-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  position: sticky;
+  top: 64px;
+  background: var(--pico-background-color, #fff);
+  z-index: 50;
+  padding-top: 1rem;
+}
+.company-header-main h1 {
+  margin: 0 0 0.5rem;
+}
+.company-meta {
+  margin-bottom: 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.company-meta-secondary {
+  font-size: 0.85rem;
+  color: var(--pico-muted-color);
+}
+.company-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 
-/* --- Responsywność --- */
-@media (max-width: 640px) {
-  .login-screen {
-    margin: 1rem auto;
-    padding: 1rem;
-  }
-  .login-screen .logo {
-    max-width: 220px;
-  }
-  .topbar {
-    padding: 0.5rem 0.75rem;
-  }
-  .topbar .user-info {
-    font-size: 0.75rem;
-  }
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+.tab {
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  white-space: nowrap;
+  min-height: auto;
+}
+.tab.active {
+  border-bottom-color: var(--pico-primary-background);
+  font-weight: 600;
+}
+.tab.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-/* --- Minimalne touch targety 44x44 px dla mobile --- */
+.tab-panel {
+  min-height: 200px;
+}
+.overview-section {
+  margin-bottom: 2rem;
+}
+.overview-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+}
+.notes-content {
+  background: var(--pico-card-background-color);
+  padding: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--pico-muted-border-color);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.meta-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0;
+}
+.meta-list dt {
+  font-weight: 500;
+  color: var(--pico-muted-color);
+}
+.meta-list dd { margin: 0; }
+.overview-coming-soon {
+  opacity: 0.7;
+}
+
+/* --- Touch targets (WCAG mobile) --- */
 button,
 .btn,
 input[type="submit"],
@@ -252,8 +783,125 @@ input[type="button"],
 [role="button"] {
   min-height: 44px;
 }
-
-/* Wyjątek dla małych kontroli w stopkach, menu itp. */
 .compact-control {
-  min-height: 32px;
+  min-height: 36px;
+}
+
+/* =============================================================
+   RESPONSIVE — przełączanie tabela ↔ karty na mobile
+   ============================================================= */
+
+/* Tablet (640-1024) */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+  .topbar-brand .brand-name {
+    display: none;
+  }
+}
+
+/* Mobile (< 640) */
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0.5rem 0.75rem;
+    flex-wrap: wrap;
+  }
+  .topbar-nav {
+    order: 99;
+    width: 100%;
+  }
+  .topbar-nav .hamburger {
+    display: inline-block;
+  }
+  .topbar-nav ul {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--pico-muted-border-color);
+    padding-top: 0.5rem;
+  }
+  .topbar-nav ul.open {
+    display: flex;
+  }
+  .topbar-nav a,
+  .topbar-nav .nav-disabled {
+    padding: 0.75rem;
+    border-radius: 0;
+  }
+  .topbar-user {
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+  }
+  .topbar-user .user-role {
+    display: none;
+  }
+
+  .container {
+    margin: 1rem auto;
+    padding: 0 0.5rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+  }
+
+  /* Tabela schowana, karty pokazane */
+  .data-table { display: none; }
+  .data-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .data-card {
+    padding: 0.75rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.5rem;
+    background: var(--pico-card-background-color);
+  }
+  .data-card .card-title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .data-card .card-row {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+  }
+  .data-card .card-label {
+    color: var(--pico-muted-color);
+  }
+
+  .company-header {
+    position: static;
+    flex-direction: column;
+  }
+
+  .modal-overlay {
+    padding: 0;
+  }
+  .modal-dialog {
+    max-height: 100vh;
+    border-radius: 0;
+    width: 100vw;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  .form-actions button {
+    width: 100%;
+  }
+
+  #toast-container {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+    max-width: none;
+  }
+  .toast { max-width: none; }
+
+  .quick-action-grid {
+    grid-template-columns: 1fr;
+  }
 }
