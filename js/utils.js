@@ -39,16 +39,56 @@ const Utils = (function() {
   }
 
   /**
-   * Pokazuje komunikat toast (alert) — na razie najprostsza wersja przez natywny alert.
-   * W Etapie 1 zastąpię go lepszym komponentem.
+   * Pokazuje komunikat — używa Toast jeśli dostępny, inaczej console.
+   * (Toast może nie być załadowany przy pierwszym renderze).
    */
   function toast(message, type) {
     type = type || 'info';
-    console.log('[' + type + '] ' + message);
-    // MVP: na razie używamy alertu w błędach, dla info tylko console.
-    if (type === 'error') {
-      alert(message);
+    if (typeof Toast !== 'undefined' && Toast[type]) {
+      Toast[type](message);
+    } else {
+      console.log('[' + type + '] ' + message);
     }
+  }
+
+  /**
+   * Pobiera plik CSV po stronie klienta.
+   * Format: UTF-8 z BOM, separator średnik (Excel PL friendly).
+   *
+   * @param {string} filename - nazwa pliku
+   * @param {Array<string>} headers - nagłówki kolumn
+   * @param {Array<Array<any>>} rows - wiersze danych
+   */
+  function downloadCsv(filename, headers, rows) {
+    const SEP = ';';
+    const BOM = '\uFEFF';
+    const escape = function(v) {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      if (s.indexOf(SEP) !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1 || s.indexOf('\r') !== -1) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    const lines = [];
+    // Komentarz z metadanymi (Excel zignoruje wiersz zaczynający się od #)
+    lines.push('# Eksport z Stodoła CRM, ' + new Date().toLocaleString('pl-PL'));
+    lines.push(headers.map(escape).join(SEP));
+    rows.forEach(function(row) {
+      lines.push(row.map(escape).join(SEP));
+    });
+
+    const csv = BOM + lines.join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 100);
   }
 
   /**
@@ -111,6 +151,7 @@ const Utils = (function() {
     escapeHtml: escapeHtml,
     renderView: renderView,
     toast: toast,
+    downloadCsv: downloadCsv,
     applyTheme: applyTheme,
     getStoredTheme: getStoredTheme,
     setSessionUser: setSessionUser,
