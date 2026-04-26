@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="System zarządzania kontaktami Stowarzyszenia Stodoła Artystów">
+  <title>Stodoła Artystów CRM</title>
+
+  <link rel="icon" type="image/svg+xml" href="pics/favicon.svg">
+
+  <!-- Pico CSS z CDN, wersja z klasami (żeby mieć dokładniejszą kontrolę) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
+
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <noscript>
+    <div style="padding:1rem;background:#fee;border:1px solid #c00;margin:1rem;">
+      Ta aplikacja wymaga włączonego JavaScript. Włącz go w ustawieniach przeglądarki i odśwież stronę.
+    </div>
+  </noscript>
+
+  <a href="#main" class="skip-link">Przejdź do treści</a>
+
+  <!-- Główny kontener - widoki są wymieniane tutaj przez router w app.js -->
+  <main id="main" aria-live="polite">
+    <!-- Loading state, pokazywany do momentu pierwszego sprawdzenia sesji -->
+    <div class="loading-screen" id="loading-screen">
+      <p>Ładowanie...</p>
+    </div>
+  </main>
+
+  <!-- JS - kolejność ma znaczenie, najpierw utility, potem api, potem app -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/views/login.js"></script>
+  <script src="js/views/dashboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
