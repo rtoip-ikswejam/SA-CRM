@@ -8,7 +8,7 @@
  *   https://script.google.com/macros/s/AKfyc.../exec
  */
 
-const BACKEND_URL = 'TUTAJ_WKLEJ_URL_APPS_SCRIPT_WEB_APP';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwhnqdgnohwsExM3Uyw0cMrZJyCn85_UXXRUd9HR0p0kHB8usV1GiyqgxHvg1i851Y/exec';
 
 const Api = (function() {
 
