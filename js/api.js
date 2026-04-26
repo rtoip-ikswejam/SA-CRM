@@ -16,7 +16,7 @@
  * BACKEND_URL: wklej URL swojego Apps Script Web App (krok 8 README).
  */
 
-const BACKEND_URL = 'TUTAJ_WKLEJ_URL_APPS_SCRIPT_WEB_APP';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxT4rS1YnAhdBTBS5FkgOu5iq_p3u7NmChw7p_fH8SnecD7pOpj_tf0BykbP7HlU80/exe';
 
 const Api = (function() {
 
