@@ -1,93 +1,63 @@
 /**
- * app.js — główny plik aplikacji SPA.
- *
- * Zadania:
- *  1. Bootstrap przy starcie — stosowanie motywu, sprawdzenie sesji
- *  2. Routing — decyzja który widok pokazać
- *  3. Obsługa zdarzeń globalnych (visibilitychange dla auto-refresh)
- *
- * W Etapie 0 routing jest uproszczony: albo ekran logowania, albo dashboard.
- * W Etapie 1 rozbudujemy o hash-based routing (#companies, #contacts, ...).
+ * app.js — bootstrap aplikacji SPA.
  */
 
 const App = (function() {
 
-  /**
-   * Inicjalizacja aplikacji. Wywoływana po załadowaniu DOMa.
-   */
   function init() {
-    // 1. Zastosuj zapisany motyw jak najszybciej (przed renderowaniem UI),
-    // żeby uniknąć FOUC (flash of unstyled content)
     Utils.applyTheme(Utils.getStoredTheme());
 
-    // 2. Sprawdź, czy backend jest skonfigurowany
     if (!Api.isConfigured()) {
       LoginView.render({
         error: 'not_configured',
-        message: 'URL backendu Apps Script nie został ustawiony w pliku js/api.js. ' +
-                 'Zobacz README, krok 8. Wklej tam URL zdeployowanego Web App ' +
-                 '(w formacie https://script.google.com/macros/s/.../exec).'
+        message: 'URL backendu Apps Script nie został ustawiony w pliku js/api.js. Zobacz README, krok 8.'
       });
       return;
     }
 
-    // 3. Sprawdź sesję
+    Spinner.show('Sprawdzanie sesji...');
     Auth.checkSession(false)
-      .then(user => {
+      .then(function(user) {
+        Spinner.hide();
         if (user) {
-          navigateToHome();
+          Router.start();
         } else {
           LoginView.render();
         }
       })
-      .catch(err => {
-        // Błąd przy whoami — pokazujemy ekran logowania z komunikatem
+      .catch(function(err) {
+        Spinner.hide();
         LoginView.render(err);
       });
   }
 
-  /**
-   * Przejście do ekranu głównego po zalogowaniu.
-   * W Etapie 0 to tylko dashboard. W Etapie 1 dojdą inne widoki.
-   */
   function navigateToHome() {
-    DashboardView.render();
-  }
-
-  /**
-   * Auto-refresh po powrocie do zakładki (np. user przełącza się między Gmailem a CRM).
-   * Sprawdzamy sesję ponownie — mogła wygasnąć po stronie Google.
-   */
-  function onVisibilityChange() {
-    if (document.visibilityState === 'visible') {
-      const user = Auth.currentUser();
-      if (user) {
-        // Sesja w cache, sprawdzamy w tle czy jeszcze aktywna
-        Auth.checkSession(true)
-          .then(u => {
-            if (!u) {
-              // Sesja wygasła — wracamy do logowania
-              LoginView.render({ error: 'not_authorized', email: user.email });
-            }
-          })
-          .catch(() => {
-            // Błąd sieci — ignorujemy, user zauważy przy kolejnej akcji
-          });
-      }
+    if (!window.location.hash || window.location.hash === '#') {
+      window.location.hash = '#dashboard';
     }
+    Router.start();
+    Router.dispatch();
   }
 
-  // Uruchamiamy po załadowaniu DOMa
+  function onVisibilityChange() {
+    if (document.visibilityState !== 'visible') return;
+    const user = Auth.currentUser();
+    if (!user) return;
+    Auth.checkSession(true).then(function(u) {
+      if (!u) {
+        Utils.clearSessionUser();
+        LoginView.render({ error: 'not_authorized', email: user.email });
+      }
+    }).catch(function() {});
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    // DOM już załadowany
     init();
   }
-
   document.addEventListener('visibilitychange', onVisibilityChange);
 
-  // Publiczny API (używany przez widoki do nawigacji)
   return {
     navigateToHome: navigateToHome,
     init: init
